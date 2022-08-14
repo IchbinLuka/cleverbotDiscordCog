@@ -49,14 +49,14 @@ class CleverbotCog(commands.Cog, name="Cleverbot"):
     # region - COMMANDS -
     @commands.command(
         name="startConversation",
-        brief="Starts a conversation in the current Text-Channel"
+        brief="Starts a conversation in the current Text-Channel",
     )
     async def start_conversation(self, ctx: Context, name: str = str(uuid.uuid4())):
         self._conversations[ctx.message.channel.id] = name
 
     @commands.command(
         name="endConversation",
-        brief="Ends the conversation in the current Text-Channel"
+        brief="Ends the conversation in the current Text-Channel",
     )
     async def end_conversation(self, ctx: Context):
         try:
@@ -68,7 +68,8 @@ class CleverbotCog(commands.Cog, name="Cleverbot"):
     # endregion
     @staticmethod
     def __fix_string(string: str) -> str:
-        """Replaces any \xhh\xhh occurrences with their utf-8 decoding."""
+        """Replaces any \\xhh\\xhh occurrences with their utf-8 decoding."""
+
         pattern = r"\\x..\\x.."
         regex = list(map(lambda x: x.replace("\\x", ""), re.findall(pattern, string)))
         parts = re.split(pattern, string)
@@ -84,7 +85,7 @@ class CleverbotCog(commands.Cog, name="Cleverbot"):
     @commands.Cog.listener()
     async def on_message(self, message: Message):
         if (
-                m_id := message.channel.id
+            m_id := message.channel.id
         ) in self._conversations.keys() and message.author != self._bot.user:
 
             def get_answer() -> str:
@@ -93,7 +94,8 @@ class CleverbotCog(commands.Cog, name="Cleverbot"):
                 )
 
             answer = get_answer()
-            if "<html>" in answer:
+            # This is necessary due to a bug where cleverbot answers with "<html" when the cleverbot api is unavailable
+            if "<html" in answer:
                 wait_msg = await message.channel.send(
                     embed=nextcord.Embed(
                         title="Service Temporarily Unavailable. Please wait... :clock1:"
