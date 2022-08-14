@@ -30,18 +30,34 @@ _logger = logging.getLogger(__name__)
 class CleverbotCog(commands.Cog, name="Cleverbot"):
 
     # region - MAGIC -
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: commands.Bot, custom_presence: str | None = "Talk to me"):
+        """
+        Parameters
+        ----------
+        bot
+            The bot this Cog is added to.
+        custom_presence
+            The presence status (e.g. "Playing Talk to me") the bot should
+            display or None if no presence should be shown.
+        """
         self._bot = bot
+        self._custom_presence = custom_presence
         self._conversations: Dict[int, str] = dict()
 
     # endregion
 
     # region - COMMANDS -
-    @commands.command(name="startConversation")
+    @commands.command(
+        name="startConversation",
+        brief="Starts a conversation in the current Text-Channel"
+    )
     async def start_conversation(self, ctx: Context, name: str = str(uuid.uuid4())):
         self._conversations[ctx.message.channel.id] = name
 
-    @commands.command(name="endConversation")
+    @commands.command(
+        name="endConversation",
+        brief="Ends the conversation in the current Text-Channel"
+    )
     async def end_conversation(self, ctx: Context):
         try:
             self._conversations.pop(ctx.message.channel.id)
@@ -52,11 +68,10 @@ class CleverbotCog(commands.Cog, name="Cleverbot"):
     # endregion
     @staticmethod
     def __fix_string(string: str) -> str:
+        """Replaces any \xhh\xhh occurrences with their utf-8 decoding."""
         pattern = r"\\x..\\x.."
         regex = list(map(lambda x: x.replace("\\x", ""), re.findall(pattern, string)))
         parts = re.split(pattern, string)
-        # print(list(regex))
-        # print(parts)
 
         def literal_to_string(s: str) -> str:
             return bytes.fromhex(s).decode(errors="ignore")
@@ -69,7 +84,7 @@ class CleverbotCog(commands.Cog, name="Cleverbot"):
     @commands.Cog.listener()
     async def on_message(self, message: Message):
         if (
-            m_id := message.channel.id
+                m_id := message.channel.id
         ) in self._conversations.keys() and message.author != self._bot.user:
 
             def get_answer() -> str:
@@ -92,7 +107,8 @@ class CleverbotCog(commands.Cog, name="Cleverbot"):
     @commands.Cog.listener()
     async def on_ready(self):
         _logger.info("Bot has successfully logged in")
-        await self._bot.change_presence(activity=Game(name="Talk to me"))
+        if self._custom_presence:
+            await self._bot.change_presence(activity=Game(name=self._custom_presence))
 
     # endregion
 
