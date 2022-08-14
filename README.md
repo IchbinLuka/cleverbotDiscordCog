@@ -4,7 +4,8 @@ A Cog for discord bots which queries the cleverbot api using [cleverbotfreeapi](
 ## Commands
 This Cog adds the following commands to your bot:
 - startConversation
-  - Starts a conversation in the current Text-Channel. > Note: Only one conversation per Text-Channel is allowed
+  - Starts a conversation in the current Text-Channel. 
+  > Note: Only one conversation per Text-Channel is allowed
 - endConversation
   - Ends the conversation in the current Text-Channel
 
@@ -14,6 +15,11 @@ pip install git+https://github.com/IchbinLuka/cleverbotDiscordCog
 ```
 
 ## Usage
+### Standalone Cleverbot bot
+1. Enter yours bots Discord API Token in `config.py`
+2. Start the bot using `main.py`
+
+### Use Cleverbot Cog in custom Bot
 ```python
 from cleverbotcog import CleverbotCog
 from nextcord.ext import commands
